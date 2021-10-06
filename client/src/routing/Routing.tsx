@@ -8,7 +8,7 @@ import styles from './Routing.module.scss';
 export const Routing: React.FC = () => {
   return (
     <Box mb="1rem" className={styles.container}>
-      <Router basename="/">
+      <Router basename="/client">
         <Switch>
           {Routes.map(elem => (
             <Route key={elem.key} exact path={`${elem.path}`} component={elem.component} />
