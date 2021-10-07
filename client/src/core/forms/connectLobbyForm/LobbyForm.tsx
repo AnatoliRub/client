@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { FC, useState } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { useHistory } from 'react-router';

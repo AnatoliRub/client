@@ -10,7 +10,7 @@ import { useTypeSelector } from 'core/hooks/useTypeSelector';
 import { useDispatch } from 'react-redux';
 import { getCreator } from 'store/actionCreators/creator';
 import { Roles } from 'core/types/roleType';
-import { getGameInfo, postGameInfo, setGameLink } from 'store/actionCreators/gameInfo';
+import { postGameSettings, setGameLink } from 'store/actionCreators/gameInfo';
 import { finishGame, sendStartGame } from 'core/api/socket.service';
 import { clearCurrentUser } from 'store/actionCreators/currentUser';
 import { deleteUserById } from 'core/api/users.service';
@@ -21,7 +21,6 @@ export const ScramMaster: React.FC = () => {
   const { currentUser } = useTypeSelector(state => state.currentUser);
   const { gameInfo } = useTypeSelector(state => state.gameInfo);
   const dispatch = useDispatch();
-  // const [isStartOpen, setIsStartOpen] = React.useState<boolean>(false);
   const [showModals, setShowModals] = React.useState<{
     cancel: boolean;
     exit: boolean;
@@ -47,8 +46,8 @@ export const ScramMaster: React.FC = () => {
   const handleChangeLink = (value: string): void => {
     dispatch(setGameLink(value));
   };
-  const handleStartGame = (): void => {
-    dispatch(postGameInfo(gameInfo));
+  const handleStartGame = async (): Promise<void> => {
+    dispatch(postGameSettings(gameInfo));
     sendStartGame();
   };
   const handleFinishGame = (): void => {

@@ -9,9 +9,7 @@ export const PlayingGameCard: React.FC<PlayingGameCardProps> = (props): JSX.Elem
 
   React.useEffect(() => {
     const changeBackground = (msg: ITimerMsg) => {
-      if (msg.payload === 'start') {
-        setIsGreen(false);
-      } else if (msg.payload === 'restart') {
+      if (msg.payload.startsWith('start') || msg.payload.startsWith('restart')) {
         setIsGreen(false);
       }
     };

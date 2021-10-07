@@ -7,5 +7,5 @@ export const getPercentResultByCard = (results: IssueVoteRes[], cardKey: string)
       count = count + 1;
     }
   });
-  return (count * 100) / results.length;
+  return Math.round((count * 100) / results.length);
 };

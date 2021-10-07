@@ -29,6 +29,7 @@ export const IssueGameSection: React.FC<IssueGameProp> = ({
 }) => {
   const { issues } = useTypeSelector(state => state.issues);
   const { currentUser } = useTypeSelector(state => state.currentUser);
+  const { gameId } = currentUser;
   const { gameSettings } = useTypeSelector(store => store.gameInfo.gameInfo);
   const dispatch = useDispatch();
   const [isModalVisibleCreate, setModalVisibleCreate] = useState(false);
@@ -63,18 +64,18 @@ export const IssueGameSection: React.FC<IssueGameProp> = ({
   const handleRaundStart = (flag: boolean) => {
     if (issues[0]) {
       setRaundStartValue(flag);
-      socket.emit('startRound', 'start');
+      socket.emit('startRound', `start-${gameId}`);
       setIssueId(issues[issueIndex]._id);
     }
   };
 
   const handleRestartRound = () => {
     socket.emit('deleteIssueVotesByIssueId', `${getIssueId}`);
-    socket.emit('reStartRound', 'restart');
+    socket.emit('reStartRound', `restart-${gameId}`);
   };
 
   const handleStopRound = () => {
-    socket.emit('endRound', 'end');
+    socket.emit('endRound', `end-${gameId}`);
     if (issues[issueIndex + 1]) {
       setIssueIndex(prev => prev + 1);
     } else {
@@ -122,19 +123,19 @@ export const IssueGameSection: React.FC<IssueGameProp> = ({
       }
     };
     const socketRunRound = (msg: ITimerMsg) => {
-      if (msg.payload === 'start') {
+      if (msg.payload === `start-${gameId}`) {
         if (gameSettings.isTimer) {
           startTimer();
         }
         setRoundEndFlag(false);
         dispatch(clearIssueVoteResult());
-      } else if (msg.payload === 'restart') {
+      } else if (msg.payload === `restart-${gameId}`) {
         if (gameSettings.isTimer) {
           restartTimer();
         }
         setRoundEndFlag(false);
         dispatch(clearIssueVoteResult());
-      } else if (msg.payload === 'end') {
+      } else if (msg.payload === `end-${gameId}`) {
         if (gameSettings.isTimer) {
           stopTimer();
         }
@@ -180,7 +181,7 @@ export const IssueGameSection: React.FC<IssueGameProp> = ({
 
   useEffect(() => {
     if (count === 0 && gameSettings.isTimer) {
-      socket.emit('endRound', 'end');
+      socket.emit('endRound', `end-${gameId}`);
       if (issues[issueIndex + 1]) {
         setIssueIndex(prev => prev + 1);
       } else {

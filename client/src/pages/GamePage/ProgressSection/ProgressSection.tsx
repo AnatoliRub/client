@@ -4,13 +4,15 @@ import { useDispatch } from 'react-redux';
 import { deleteUserById } from 'core/api/users.service';
 import { Roles } from 'core/types/roleType';
 import { useTypeSelector } from 'core/hooks/useTypeSelector';
-import { getUsers } from 'store/actionCreators/user';
+import { deleteUser, getUsers, setUser } from 'store/actionCreators/user';
 import { AppModal } from 'core/components/modals/Modal';
 import { Text } from 'core/components/Text';
 import { UserCard } from 'core/components/userCard/UserCard';
 import { ProgressCard } from 'core/components/progressCard/ProgressCard';
+import { socket, startPlayerVoting } from 'core/api/socket.service';
+import { IUserMsg, Message } from 'core/types/socketMessageType';
+import { clearCurrentUser } from 'store/actionCreators/currentUser';
 import styles from './ProgressSection.module.scss';
-import { startPlayerVoting } from 'core/api/socket.service';
 
 interface ProgressSectionProp {
   chooseIssueId: string;
@@ -58,7 +60,24 @@ export const ProgressSection: React.FC<ProgressSectionProp> = ({ chooseIssueId }
   };
 
   useEffect(() => {
+    const socketSetUser = (msg: IUserMsg) => {
+      if (msg.payload.gameId === currentUser.gameId) {
+        dispatch(setUser(msg.payload));
+      }
+    };
+    const socketDeleteUser = (msg: IUserMsg) => {
+      dispatch(deleteUser(msg.payload));
+      if (msg.payload._id === currentUser.userId) {
+        dispatch(clearCurrentUser(currentUser));
+      }
+    };
     dispatch(getUsers(currentUser.gameId));
+    socket.on(Message.deleteUser, socketDeleteUser);
+    socket.on(Message.createUser, socketSetUser);
+    return () => {
+      socket.off(Message.createUser, socketSetUser);
+      socket.off(Message.deleteUser, socketDeleteUser);
+    };
   }, []);
 
   return (

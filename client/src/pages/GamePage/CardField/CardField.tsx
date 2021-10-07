@@ -8,7 +8,6 @@ import { setIssueVote, setIssueVoteResult } from 'store/actionCreators/issueVote
 import { socket } from 'core/api/socket.service';
 import { postNewIssueVote } from 'core/api/issueVote.service';
 import { ITimerMsg, IVoteIssueMsg, Message } from 'core/types/socketMessageType';
-import { getIssueById } from 'core/api/issues.service';
 import { Roles } from 'core/types/roleType';
 
 interface CardFieldProps {
@@ -22,13 +21,15 @@ export const CardField: React.FC<CardFieldProps> = ({ chooseIssueId, timerValue 
   const { issueVote } = useTypeSelector(state => state.issueVote);
   const [isClick, setIsClickValue] = useState(false);
   const dispatch = useDispatch();
+  const { gameId } = currentUser;
   let issueVoteCard: IssueVote;
 
-  const handleClickCard = (key: string, value: string) => {
+  const handleClickCard = (key?: string, value?: string) => {
+    const defCard = gameSettings.cardValues[0];
     issueVoteCard = {
       vote: {
-        key: `${key}`,
-        value: `${value}`,
+        key: `${key ? key : defCard.key}`,
+        value: `${value ? value : defCard.value}`,
       },
       gameId: `${currentUser.gameId}`,
       playerId: `${currentUser.userId}`,
@@ -55,31 +56,31 @@ export const CardField: React.FC<CardFieldProps> = ({ chooseIssueId, timerValue 
         (currentUser.role === Roles.creator && gameSettings.isAsPlayer) ||
         currentUser.role === Roles.user
       )
-        handleClickCard('unknown', 'cup');
+        handleClickCard();
     }
   }, [timerValue]);
 
   useEffect(() => {
     const handleClickCardValue = (msg: ITimerMsg) => {
-      if (msg.payload === 'start') {
+      if (msg.payload === `start-${gameId}`) {
         setIsClickValue(true);
-      } else if (msg.payload === 'restart') {
+      } else if (msg.payload === `restart-${gameId}`) {
         setIsClickValue(true);
       } else if (
-        msg.payload === 'end' &&
+        msg.payload === `end-${gameId}` &&
         !gameSettings.isTimer &&
         isClick &&
         (gameSettings.isAsPlayer || currentUser.role === Roles.user) &&
         currentUser.role !== Roles.observer
       ) {
-        handleClickCard('unknown', 'cup');
+        handleClickCard();
       } else if (
-        msg.payload === 'end' &&
+        msg.payload === `end-${gameId}` &&
         issueVote.vote.value === '' &&
         (gameSettings.isAsPlayer || currentUser.role === Roles.user) &&
         currentUser.role !== Roles.observer
       ) {
-        handleClickCard('unknown', 'cup');
+        handleClickCard();
       }
     };
     socket.on(Message.startRound, handleClickCardValue);

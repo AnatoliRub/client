@@ -9,6 +9,8 @@ import { IssueGameSection } from './IssueGameSection/IssueGameSection';
 import { ScramMasterGameSection } from './ScramMasterGameSection/ScramMasterGameSection';
 import { ProgressSection } from './ProgressSection/ProgressSection';
 import { KickVotingModal } from 'core/components/modals/KickVotingModal';
+import { IGame } from 'core/types/get200Types';
+import { setGameInfo } from 'store/actionCreators/gameInfo';
 import styles from './GamePage.module.scss';
 
 export const GamePage: React.FC = () => {
@@ -40,11 +42,17 @@ export const GamePage: React.FC = () => {
     setTimerValue(gameSettings.roundTime ? gameSettings.roundTime : 0);
   }, [gameSettings]);
 
+  const socketSettings = ({ payload }: { event: string; payload: IGame }) => {
+    dispatch(setGameInfo(payload));
+  };
+
   React.useEffect(() => {
     socket.on(Message.finishGameMsg, socketClearUser);
+    socket.on(Message.changeGameSettings, socketSettings);
 
     return () => {
       socket.off(Message.finishGameMsg, socketClearUser);
+      socket.off(Message.changeGameSettings, socketSettings);
     };
   }, []);
 
